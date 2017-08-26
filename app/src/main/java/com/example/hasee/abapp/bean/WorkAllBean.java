@@ -9,6 +9,6 @@ import java.util.List;
  */
 
 public class WorkAllBean {
-    public List<ProcessWorkerBean> processWorkerBeanList=new ArrayList<>();
-    public List<ClassGroupBean> classGroupBeanList=new ArrayList<>();
+    public List<ProcessWorkerBean> processWorkerBeanList=new ArrayList<>();//工序组信息
+    public List<ClassGroupBean> classGroupBeanList=new ArrayList<>();//班组信息
 }
