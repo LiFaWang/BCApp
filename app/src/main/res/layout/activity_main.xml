@@ -19,7 +19,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -45,7 +45,7 @@
                     android:drawableRight="@drawable/ic_arrow_drop_down_black_24dp"
                     android:text="订 单 号"
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:id="@+id/tvStyleNum"
@@ -57,7 +57,7 @@
                     android:gravity="center"
                     android:text="款  号"
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:id="@+id/tv_BatchNum"
@@ -69,10 +69,11 @@
                     android:gravity="center"
                     android:text="批 次 号"
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/ll_order"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -86,7 +87,7 @@
 
                     android:text="订单交期"
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:layout_width="0dp"
@@ -96,7 +97,7 @@
                     android:text="订单数量"
 
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -104,7 +105,7 @@
                     android:gravity="center"
                     android:text="累计裁剪数量"
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:layout_width="0dp"
@@ -113,22 +114,23 @@
                     android:gravity="center"
                     android:text="以上线数量"
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="1.04"
                     android:gravity="center"
                     android:text="已下线数量"
                     android:textColor="@color/colorTitle"
-                    android:textSize="18sp"/>
+                    android:textSize="20sp"/>
 
             </LinearLayout>
             <include layout="@layout/underline_black"></include>
 
 
             <LinearLayout
+                android:id="@+id/ll_count"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
@@ -138,7 +140,7 @@
                 <TextView
                     android:id="@+id/tvDeliveryDate"
                     android:layout_width="0dp"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textColor="#9e0efe"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -148,7 +150,7 @@
                 <TextView
                     android:id="@+id/tvOrderQTY"
                     android:layout_width="0dp"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textColor="#9e0efe"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -158,7 +160,7 @@
                 <TextView
                     android:id="@+id/tvCutQTY"
                     android:layout_width="0dp"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textColor="#9e0efe"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -170,7 +172,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textColor="#9e0efe"
                     android:gravity="center"
                     android:text="100"/>
@@ -181,48 +183,54 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textColor="#9e0efe"
                     android:text="100"/>
 
             </LinearLayout>
         </LinearLayout>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+
             <ImageView
                 android:scaleType="fitXY"
                 android:id="@+id/ivPicture"
                 android:layout_width="270dp"
-                android:layout_height="match_parent"
+                android:layout_height="150dp"
                 android:src="@mipmap/ic_launcher"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"/>
-        </LinearLayout>
-
-
 
     </LinearLayout>
-
-
     <include layout="@layout/underline_black"></include>
-
-        <LinearLayout
+    <include layout="@layout/head_barchart_list"></include>
+    <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="100dp"
             android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <ListView
-                android:id="@+id/lv_work"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            </ListView>
-
-
-        </LinearLayout>
-
-
+            android:gravity="center"
+            android:text="工序组"
+            android:textColor="@color/colorTitle"
+            android:textSize="20sp"/>
+        <ListView
+            android:id="@+id/lv_work"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="50dp"
+            android:layout_weight="2">
+        </ListView>
+        <GridView
+            android:id="@+id/gv_group"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="50dp"
+            android:layout_weight="4"
+            android:stretchMode="columnWidth"
+            android:numColumns="2">
+        </GridView>
+    </LinearLayout>
 </LinearLayout>
 </layout>

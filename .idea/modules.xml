@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ABApp.iml" filepath="$PROJECT_DIR$/ABApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BCApp.iml" filepath="$PROJECT_DIR$/BCApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/Hslibrary/Hslibrary.iml" filepath="$PROJECT_DIR$/Hslibrary/Hslibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

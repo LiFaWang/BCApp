@@ -2,9 +2,12 @@ package com.example.hasee.abapp;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import com.example.hasee.abapp.adapter.BatchNumAdapter;
+import com.example.hasee.abapp.adapter.GroupAdapter;
 import com.example.hasee.abapp.adapter.OrderNumAdapter;
 import com.example.hasee.abapp.adapter.StyleNumAdapter;
 import com.example.hasee.abapp.adapter.WorkAdapter;
@@ -46,7 +49,7 @@ public class MainActivity extends NotWebBaseActivity {
     private OrderNumAdapter mOrderNumAdapter;//订单号adapter
     private StyleNumAdapter mStyleNumAdapter;//款号adapter
     private BatchNumAdapter mBatchNumAdapter;//批次号adapter
-//    private List<StyleNumBean> mFliterStyleNumList;//筛选款号数据集合
+    //    private List<StyleNumBean> mFliterStyleNumList;//筛选款号数据集合
 //    private List<TopDataBean> mFliterBatchNumList;//筛选的批次号集合
 //    private List<StyleNumBean> listFliterStyleItem;//筛选款号的数据
 //    private List<TopDataBean> listFliterBatchItem;//筛选批次号的数据
@@ -62,19 +65,19 @@ public class MainActivity extends NotWebBaseActivity {
     private XAxis xAxis;//x轴
     private YAxis yAxis;//y轴
     private String xData[];//x轴描述
-//    private List<BarEntry> xData;//x轴描述
-//    private List<RealTimeProcessBarBean> data;//实时监控设备数据
+    //    private List<RealTimeProcessBarBean> data;//实时监控设备数据
     private BarDataSet allPointsName, errorPointsName;//所有点数，异常点数名字
     private ArrayList<BarEntry> allPoints, errorPoints;//所有点数，异常点数
-//    private RealTimeProcessAdapter mRealTimeProcessAdapter;
-//    private String iCountryId = "";//国家id
-//    private String iFactoryId = "";//工厂id
+    //    private RealTimeProcessAdapter mRealTimeProcessAdapter;
 //    private List<RealTimeProcessBarBean> mGroupBeen;
     private WorkAdapter mWorkAdapter;
-//    private View mHead;
+    private GroupAdapter mGroupAdapter;
+    //    private View mHead;
     private BarChart mBarChart;
-//    private List<TopDataBean> mTopDataBeanList;
+    //    private List<TopDataBean> mTopDataBeanList;
     private List<RealTimeProcessBarBean> mRealTimeProcessBarBeanList;
+    private LinearLayout mLlBalance;
+    private List<ClassGroupBean> mClassGroupBeenList;
     //    private List<ProcessWorkerBean> mProcessWorkerBeanList;
 
 
@@ -87,7 +90,7 @@ public class MainActivity extends NotWebBaseActivity {
     public void init() {
         mActivityMainBinding = (ActivityMainBinding) viewDataBinding;
 //        mProcessWorkerBeanList=new ArrayList<>();
-        mWorkAllBeanList=new ArrayList<>();
+        mWorkAllBeanList = new ArrayList<>();
 //        mTopDataBeanList=new ArrayList<>();
         mRealTimeProcessBarBeanList = new ArrayList<>();
 //        mClassGroupBeanList=new ArrayList<>();
@@ -111,17 +114,66 @@ public class MainActivity extends NotWebBaseActivity {
         initHead();
 
         initData();
-        mWorkAdapter=new WorkAdapter(mWorkAllBeanList,this);
+        mWorkAdapter = new WorkAdapter(mWorkAllBeanList, this);
+//        mGroupAdapter = new GroupAdapter(mClassGroupBeenList, this);
+        mGroupAdapter = new GroupAdapter(mWorkAllBeanList, this);
         mActivityMainBinding.lvWork.setAdapter(mWorkAdapter);
+        mActivityMainBinding.gvGroup.setAdapter(mGroupAdapter);
+        mActivityMainBinding.lvWork.setOnTouchListener(new View.OnTouchListener() {
 
+            private float mY;
+            private float mCurrentY;
+            private float mCurrentX;
+            private float mX;
+
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        mX = motionEvent.getX();
+                        mY = motionEvent.getY();
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+                        mCurrentX = motionEvent.getX();
+                        mCurrentY = motionEvent.getY();
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (mCurrentY - mY > 0 && (Math.abs(mCurrentY - mY) > 25)) {
+                            //向下滑动
+                            mActivityMainBinding.llOrder.setVisibility(View.VISIBLE);
+                            mActivityMainBinding.llCount.setVisibility(View.VISIBLE);
+                            mActivityMainBinding.ivPicture.setVisibility(View.VISIBLE);
+                            mLlBalance.setVisibility(View.VISIBLE);
+
+
+                        } else if (mCurrentY - mY < 0 && (Math.abs(mCurrentY - mY) > 25)) {
+                            //向上滑动
+                            mActivityMainBinding.llOrder.setVisibility(View.GONE);
+                            mActivityMainBinding.llCount.setVisibility(View.GONE);
+                            mActivityMainBinding.ivPicture.setVisibility(View.GONE);
+                            mLlBalance.setVisibility(View.GONE);
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+                return false;
+
+            }
+        });
 
 
     }
 
-    private void initHead(){
-        View head = View.inflate(this,R.layout.head_barchart_list,null);
-        mBarChart =  head.findViewById(R.id.barChart);
-        mActivityMainBinding.lvWork.addHeaderView(head);
+    private void initHead() {
+//        View head = View.inflate(this, R.layout.head_barchart_list, null);
+//        mBarChart = head.findViewById(R.id.barChart);
+        mLlBalance = (LinearLayout) findViewById(R.id.llBalance);
+        mBarChart = (BarChart) findViewById(R.id.barChart);
+//        mActivityMainBinding.lvWork.addHeaderView(head);
     }
 
 //    private void initTestWorkData() {
@@ -215,30 +267,30 @@ public class MainActivity extends NotWebBaseActivity {
         NewRxjavaWebUtils.getUIThread(NewRxjavaWebUtils.getObservable(this, "")
                         //订单号
                         .map(new Func1<String, HsWebInfo>() {
-                                 @Override
-                                 public HsWebInfo call(String s) {
-                                     HsWebInfo hsWebInfo=NewRxjavaWebUtils.getJsonData(getApplicationContext(), CUS_SERVICE,
-                                             "spappAssignment", "iIndex =0",
-                                             TopDataBean.class.getName(), true, "查询无结果！");
-                                     Map<String,Object> map=new HashMap<>();
-                                     if(!hsWebInfo.success) return hsWebInfo;
-                                     map.put("TopDataBean",hsWebInfo.wsData.LISTWSDATA);
-                                     hsWebInfo.object=map;
-                                     return hsWebInfo;
-                                 }
-                             })
+                            @Override
+                            public HsWebInfo call(String s) {
+                                HsWebInfo hsWebInfo = NewRxjavaWebUtils.getJsonData(getApplicationContext(), CUS_SERVICE,
+                                        "spappAssignment", "iIndex =0",
+                                        TopDataBean.class.getName(), true, "查询无结果！");
+                                Map<String, Object> map = new HashMap<>();
+                                if (!hsWebInfo.success) return hsWebInfo;
+                                map.put("TopDataBean", hsWebInfo.wsData.LISTWSDATA);
+                                hsWebInfo.object = map;
+                                return hsWebInfo;
+                            }
+                        })
                         //柱状图
                         .map(new Func1<HsWebInfo, HsWebInfo>() {
                             @Override
                             public HsWebInfo call(HsWebInfo hsWebInfo) {
-                                if(!hsWebInfo.success) return hsWebInfo;
-                                Map<String,Object> map= (Map<String, Object>) hsWebInfo.object;
-                                hsWebInfo= getJsonData(getApplicationContext(), CUS_SERVICE,
+                                if (!hsWebInfo.success) return hsWebInfo;
+                                Map<String, Object> map = (Map<String, Object>) hsWebInfo.object;
+                                hsWebInfo = getJsonData(getApplicationContext(), CUS_SERVICE,
                                         "spappAssignment", "iIndex =1",
                                         RealTimeProcessBarBean.class.getName(), true, "");
-                                if(!hsWebInfo.success) return hsWebInfo;
-                                map.put("RealTimeProcessBarBean",hsWebInfo.wsData.LISTWSDATA);
-                                hsWebInfo.object=map;
+                                if (!hsWebInfo.success) return hsWebInfo;
+                                map.put("RealTimeProcessBarBean", hsWebInfo.wsData.LISTWSDATA);
+                                hsWebInfo.object = map;
                                 return hsWebInfo;
                             }
                         })
@@ -246,69 +298,93 @@ public class MainActivity extends NotWebBaseActivity {
                         .map(new Func1<HsWebInfo, HsWebInfo>() {
                             @Override
                             public HsWebInfo call(HsWebInfo hsWebInfo) {
-                                if(!hsWebInfo.success) return hsWebInfo;
-                                Map<String,Object> map= (Map<String, Object>) hsWebInfo.object;
-                                hsWebInfo= getJsonData(getApplicationContext(), CUS_SERVICE,
+                                if (!hsWebInfo.success) return hsWebInfo;
+                                Map<String, Object> map = (Map<String, Object>) hsWebInfo.object;
+                                hsWebInfo = getJsonData(getApplicationContext(), CUS_SERVICE,
                                         "spappAssignment", "iIndex =2",
                                         ProcessWorkerBean.class.getName(), true, "");
-                                if(!hsWebInfo.success) return hsWebInfo;
-                                map.put("ProcessWorkerBean",hsWebInfo.wsData.LISTWSDATA);
-                                hsWebInfo.object=map;
+                                if (!hsWebInfo.success) return hsWebInfo;
+                                map.put("ProcessWorkerBean", hsWebInfo.wsData.LISTWSDATA);
+                                hsWebInfo.object = map;
                                 return hsWebInfo;
                             }
                         })
                         //班组人员-右侧
                         .map(new Func1<HsWebInfo, HsWebInfo>() {
-                                 @Override
-                                 public HsWebInfo call(HsWebInfo hsWebInfo) {
-                                     if(!hsWebInfo.success) return hsWebInfo;
-                                     Map<String,Object> map= (Map<String, Object>) hsWebInfo.object;
-                                     hsWebInfo= getJsonData(getApplicationContext(), CUS_SERVICE,
-                                             "spappAssignment", "iIndex =3",
-                                             ClassGroupBean.class.getName(), true, "");
-                                     if(!hsWebInfo.success) return hsWebInfo;
-                                     map.put("ClassGroupBean",hsWebInfo.wsData.LISTWSDATA);
-                                     hsWebInfo.object=map;
-                                     return hsWebInfo;
-                                 }
-                             })
+                            @Override
+                            public HsWebInfo call(HsWebInfo hsWebInfo) {
+                                if (!hsWebInfo.success) return hsWebInfo;
+                                Map<String, Object> map = (Map<String, Object>) hsWebInfo.object;
+                                hsWebInfo = getJsonData(getApplicationContext(), CUS_SERVICE,
+                                        "spappAssignment", "iIndex =3",
+                                        ClassGroupBean.class.getName(), true, "");
+                                if (!hsWebInfo.success) return hsWebInfo;
+                                map.put("ClassGroupBean", hsWebInfo.wsData.LISTWSDATA);
+                                hsWebInfo.object = map;
+                                return hsWebInfo;
+                            }
+                        })
                 , getApplicationContext(), mDialog, new SimpleHsWeb() {
+
+
                     @Override
                     public void success(HsWebInfo hsWebInfo) {
-                        Map<String,Object> map=(Map<String, Object>) hsWebInfo.object;
-                        List<WsEntity> topDataBeanEntityList= (List<WsEntity>) map.get("TopDataBean");
-                        List<WsEntity> realTimeProcessBarBeanEntityList= (List<WsEntity>) map.get("RealTimeProcessBarBean");
-                        List<WsEntity> processWorkerBeanEntityList= (List<WsEntity>) map.get("ProcessWorkerBean");
-                        List<WsEntity> classGroupBeanEntityList= (List<WsEntity>) map.get("ClassGroupBean");
+                        Map<String, Object> map = (Map<String, Object>) hsWebInfo.object;
+                        List<WsEntity> topDataBeanEntityList = (List<WsEntity>) map.get("TopDataBean");
+                        List<WsEntity> realTimeProcessBarBeanEntityList = (List<WsEntity>) map.get("RealTimeProcessBarBean");
+                        List<WsEntity> processWorkerBeanEntityList = (List<WsEntity>) map.get("ProcessWorkerBean");
+                        List<WsEntity> classGroupBeanEntityList = (List<WsEntity>) map.get("ClassGroupBean");
                         //表头信息
-                        TopDataBean topDataBean= (TopDataBean) topDataBeanEntityList.get(0);
+
+                        TopDataBean topDataBean = (TopDataBean) topDataBeanEntityList.get(0);
+
                         //TODO
                         showTopData(topDataBean);
                         //柱状图信息
                         showBarData(realTimeProcessBarBeanEntityList);
                         //工序组成员通过班组名称分组
-                        Map<String,WorkAllBean> workAllBeanMap=new HashMap<>();
-                        for(WsEntity entity:processWorkerBeanEntityList){
-                            ProcessWorkerBean bean= (ProcessWorkerBean) entity;
-                            WorkAllBean workAllBean=workAllBeanMap.get(bean.SWORKTEAMNAME);
-                            if(workAllBean==null) workAllBean=new WorkAllBean();
+                        Map<String, WorkAllBean> workAllBeanMap = new HashMap<>();
+                        List<ProcessWorkerBean> processWorkerBeanList = new ArrayList<>();
+//                        Map<String, List<ProcessWorkerBean>> processWorkerBeanMap = new HashMap<>();
+//                        for (int i = 0; i < processWorkerBeanEntityList.size(); i++) {
+//                            WsEntity entity = processWorkerBeanEntityList.get(i);
+//                            ProcessWorkerBean bean = (ProcessWorkerBean) entity;
+////                            List<ProcessWorkerBean> processWorkerBeen = processWorkerBeanMap.get(bean.SWORKTEAMNAME);
+//                            processWorkerBeanList.add(bean);
+////                            processWorkerBeanMap.put(bean.SWORKTEAMNAME,processWorkerBeanList);
+//
+//
+//                        }
+
+                        for (WsEntity entity : processWorkerBeanEntityList) {
+                            ProcessWorkerBean bean = (ProcessWorkerBean) entity;
+                            WorkAllBean workAllBean = workAllBeanMap.get(bean.SWORKTEAMNAME);
+                            if (workAllBean == null) workAllBean = new WorkAllBean();
                             workAllBean.processWorkerBeanList.add(bean);
-                            workAllBeanMap.put(bean.SWORKTEAMNAME,workAllBean);
+                            workAllBeanMap.put(bean.SWORKTEAMNAME, workAllBean);
                         }
-                        //工作组成员通过班组名称分组
-                        for (WsEntity entity:classGroupBeanEntityList ) {
-                            ClassGroupBean classGroupBean= (ClassGroupBean) entity;
-                            WorkAllBean workAllBean=workAllBeanMap.get(classGroupBean.SWORKTEAMNAME);
-                            if(workAllBean==null) workAllBean=new WorkAllBean();
+//                        工作组成员通过班组名称分组
+//                        mClassGroupBeenList = new ArrayList<>();
+//                   for (WsEntity entity : classGroupBeanEntityList) {
+//                       ClassGroupBean classGroupBean = (ClassGroupBean) entity;
+//                       mClassGroupBeenList.add(classGroupBean);
+//
+//                   }
+
+                        for (WsEntity entity : classGroupBeanEntityList) {
+                            ClassGroupBean classGroupBean = (ClassGroupBean) entity;
+                            WorkAllBean workAllBean = workAllBeanMap.get(classGroupBean.SWORKTEAMNAME);
+                            if (workAllBean == null) workAllBean = new WorkAllBean();
                             workAllBean.classGroupBeanList.add(classGroupBean);
-                            workAllBeanMap.put(classGroupBean.SWORKTEAMNAME,workAllBean);
+                            workAllBeanMap.put(classGroupBean.SWORKTEAMNAME, workAllBean);
                         }
-                        Iterator<Map.Entry<String,WorkAllBean>> it=workAllBeanMap.entrySet().iterator();
-                        while (it.hasNext()){
-                            Map.Entry<String,WorkAllBean> entry=it.next();
+                        Iterator<Map.Entry<String, WorkAllBean>> it = workAllBeanMap.entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry<String, WorkAllBean> entry = it.next();
                             mWorkAllBeanList.add(entry.getValue());
                         }
                         mWorkAdapter.notifyDataSetChanged();
+                        mGroupAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -380,6 +456,7 @@ public class MainActivity extends NotWebBaseActivity {
 
     /**
      * 显示柱状图信息
+     *
      * @param realTimeProcessBarBeanEntityList
      */
     private void showBarData(List<WsEntity> realTimeProcessBarBeanEntityList) {
@@ -397,8 +474,8 @@ public class MainActivity extends NotWebBaseActivity {
         barChart.clear();
         allPoints.clear();
         errorPoints.clear();
-        for (int i = 0; i <realTimeProcessBarBeanEntityList.size() ; i++) {
-            RealTimeProcessBarBean realTimeProcessBarBean= (RealTimeProcessBarBean) realTimeProcessBarBeanEntityList.get(i);
+        for (int i = 0; i < realTimeProcessBarBeanEntityList.size(); i++) {
+            RealTimeProcessBarBean realTimeProcessBarBean = (RealTimeProcessBarBean) realTimeProcessBarBeanEntityList.get(i);
             mRealTimeProcessBarBeanList.add(realTimeProcessBarBean);
         }
         xData = new String[mRealTimeProcessBarBeanList.size()];
@@ -428,8 +505,15 @@ public class MainActivity extends NotWebBaseActivity {
     /**
      * 显示头部信息
      */
-    private void showTopData(TopDataBean topDataBean){
-
+    private void showTopData(TopDataBean topDataBean) {
+        mActivityMainBinding.tvOrderNum.setText(topDataBean.SORDERNO);
+        mActivityMainBinding.tvStyleNum.setText(topDataBean.SSTYLENO);
+        mActivityMainBinding.tvBatchNum.setText(topDataBean.SLOTNO);
+        mActivityMainBinding.tvDeliveryDate.setText(topDataBean.DDELIVERYDATE);
+        mActivityMainBinding.tvOrderQTY.setText(topDataBean.IORDERQTY);
+        mActivityMainBinding.tvCutQTY.setText(topDataBean.ICUTQTY);
+        mActivityMainBinding.tvUpQTY.setText(topDataBean.IUPQTY);
+        mActivityMainBinding.tvDownQTY.setText(topDataBean.IDOWNQTY);
     }
 
 //    /**
@@ -615,9 +699,6 @@ public class MainActivity extends NotWebBaseActivity {
 ////                    }
 ////                });
 ////    }
-
-
-
 
 
 }
