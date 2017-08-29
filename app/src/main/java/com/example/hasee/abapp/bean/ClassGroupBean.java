@@ -21,4 +21,14 @@ public class ClassGroupBean extends WsData {
     public String SWORKTYPE="";
     public String GPIC="";
 
+    @Override
+    public String toString() {
+        return "ClassGroupBean{" +
+                "SWORKTEAMNAME='" + SWORKTEAMNAME + '\'' +
+                ", SEMPLOYEENO='" + SEMPLOYEENO + '\'' +
+                ", SEMPLOYEENAMECN='" + SEMPLOYEENAMECN + '\'' +
+                ", SWORKTYPE='" + SWORKTYPE + '\'' +
+                ", GPIC='" + GPIC + '\'' +
+                '}';
+    }
 }

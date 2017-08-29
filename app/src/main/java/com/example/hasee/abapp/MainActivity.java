@@ -16,6 +16,7 @@ import com.example.hasee.abapp.bean.ProcessWorkerBean;
 import com.example.hasee.abapp.bean.RealTimeProcessBarBean;
 import com.example.hasee.abapp.bean.TopDataBean;
 import com.example.hasee.abapp.bean.WorkAllBean;
+import com.example.hasee.abapp.bean.WorkGroupBean;
 import com.example.hasee.abapp.databinding.ActivityMainBinding;
 import com.example.hasee.abapp.utils.MyUtils;
 import com.github.mikephil.charting.charts.BarChart;
@@ -27,7 +28,6 @@ import com.github.mikephil.charting.data.BarEntry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +79,10 @@ public class MainActivity extends NotWebBaseActivity {
     private LinearLayout mLlBalance;
     private List<ClassGroupBean> mClassGroupBeenList;
     //    private List<ProcessWorkerBean> mProcessWorkerBeanList;
+    private float mY;
+    private float mCurrentY;
+    private float mCurrentX;
+    private float mX;
 
 
     @Override
@@ -114,17 +118,53 @@ public class MainActivity extends NotWebBaseActivity {
         initHead();
 
         initData();
-        mWorkAdapter = new WorkAdapter(mWorkAllBeanList, this);
+//        mWorkAdapter = new WorkAdapter(mWorkAllBeanList, this);
 //        mGroupAdapter = new GroupAdapter(mClassGroupBeenList, this);
-        mGroupAdapter = new GroupAdapter(mWorkAllBeanList, this);
-        mActivityMainBinding.lvWork.setAdapter(mWorkAdapter);
-        mActivityMainBinding.gvGroup.setAdapter(mGroupAdapter);
+//        mGroupAdapter = new GroupAdapter(mWorkAllBeanList, this);
+//        mActivityMainBinding.lvWork.setAdapter(mWorkAdapter);
+//        mActivityMainBinding.gvGroup.setAdapter(mGroupAdapter);
+        mActivityMainBinding.gvGroup.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        mX = event.getX();
+                        mY = event.getY();
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+                        mCurrentX = event.getX();
+                        mCurrentY = event.getY();
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (mCurrentY - mY > 0 && (Math.abs(mCurrentY - mY) > 25)) {
+                            //向下滑动
+                            mActivityMainBinding.llOrder.setVisibility(View.VISIBLE);
+                            mActivityMainBinding.llCount.setVisibility(View.VISIBLE);
+                            mActivityMainBinding.ivPicture.setVisibility(View.VISIBLE);
+                            mLlBalance.setVisibility(View.VISIBLE);
+
+
+                        } else if (mCurrentY - mY < 0 && (Math.abs(mCurrentY - mY) > 25)) {
+                            //向上滑动
+                            mActivityMainBinding.llOrder.setVisibility(View.GONE);
+                            mActivityMainBinding.llCount.setVisibility(View.GONE);
+                            mActivityMainBinding.ivPicture.setVisibility(View.GONE);
+                            mLlBalance.setVisibility(View.GONE);
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+                return false;
+
+            }
+        });
         mActivityMainBinding.lvWork.setOnTouchListener(new View.OnTouchListener() {
 
-            private float mY;
-            private float mCurrentY;
-            private float mCurrentX;
-            private float mX;
+
 
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -343,8 +383,59 @@ public class MainActivity extends NotWebBaseActivity {
                         //柱状图信息
                         showBarData(realTimeProcessBarBeanEntityList);
                         //工序组成员通过班组名称分组
-                        Map<String, WorkAllBean> workAllBeanMap = new HashMap<>();
-                        List<ProcessWorkerBean> processWorkerBeanList = new ArrayList<>();
+                        List<ProcessWorkerBean> processWorkerBeanList = new ArrayList<>();//工序组人员集合
+                        for (WsEntity entity : processWorkerBeanEntityList) {
+                            processWorkerBeanList.add((ProcessWorkerBean) entity);//
+                        }
+                        List<List<ProcessWorkerBean>> listByWorkTeamName = getListByWorkTeamName(processWorkerBeanList);//通过组名过滤
+
+                        List<String> partNames = new ArrayList<>();//工序名称集合
+                        List<String> distinctPartNames;
+                        WorkGroupBean workGroupBean = new WorkGroupBean();
+                        for (List<ProcessWorkerBean> list : listByWorkTeamName) {//组名集合
+                            for (ProcessWorkerBean bean : list) {
+                                partNames.add(bean.SPARTNAME);//工序名字
+                            }
+                            distinctPartNames = distinctData(partNames);
+                            for (String keyName : distinctPartNames) {
+                                WorkGroupBean.ProgressBean progressBean = new WorkGroupBean.ProgressBean();
+                                progressBean.progressName = keyName;
+                                for (ProcessWorkerBean bean : list) {
+                                    if (keyName.equals(bean.SPARTNAME)) {
+                                        progressBean.workerNames.add(bean.SEMPLOYEENAMECN);
+                                    }
+                                }
+                                workGroupBean.progressBeen.add(progressBean);
+                            }
+                        }
+                        System.out.println(workGroupBean.progressBeen);
+                        mWorkAdapter = new WorkAdapter(workGroupBean.progressBeen, getApplicationContext());
+                        mActivityMainBinding.lvWork.setAdapter(mWorkAdapter);
+                        //工序组成员通过班组名称分组
+                        List<ClassGroupBean> classGroupBeanList = new ArrayList<>();
+                        for (WsEntity entity : classGroupBeanEntityList) {
+                            classGroupBeanList.add((ClassGroupBean) entity);
+                        }
+                        List<List<ClassGroupBean>> classGroupListByWorkTeamName = getListByWorkTeamName(classGroupBeanList);
+
+                        for (List<ClassGroupBean> classGroupBeen : classGroupListByWorkTeamName) {
+                            for (ClassGroupBean classGroupBean : classGroupBeen) {
+                                if (classGroupBean.SWORKTEAMNAME.equals(processWorkerBeanList.get(0).SWORKTEAMNAME)) {
+                                    System.out.println(classGroupBeen);
+                                    mGroupAdapter=new GroupAdapter(classGroupBeen,getApplicationContext());
+                                    mActivityMainBinding.gvGroup.setAdapter(mGroupAdapter);
+                                    mActivityMainBinding.tvClass .setText("班组:         "+classGroupBeen.get(0).SWORKTEAMNAME);
+
+                                    break;
+                                }
+                            }
+
+                        }
+
+
+//                        //工序组成员通过班组名称分组
+//                        Map<String, WorkAllBean> workAllBeanMap = new HashMap<>();
+//                        List<ProcessWorkerBean> processWorkerBeanList = new ArrayList<>();
 //                        Map<String, List<ProcessWorkerBean>> processWorkerBeanMap = new HashMap<>();
 //                        for (int i = 0; i < processWorkerBeanEntityList.size(); i++) {
 //                            WsEntity entity = processWorkerBeanEntityList.get(i);
@@ -356,33 +447,33 @@ public class MainActivity extends NotWebBaseActivity {
 //
 //                        }
 
-                        for (WsEntity entity : processWorkerBeanEntityList) {
-                            ProcessWorkerBean bean = (ProcessWorkerBean) entity;
-                            WorkAllBean workAllBean = workAllBeanMap.get(bean.SWORKTEAMNAME);
-                            if (workAllBean == null) workAllBean = new WorkAllBean();
-                            workAllBean.processWorkerBeanList.add(bean);
-                            workAllBeanMap.put(bean.SWORKTEAMNAME, workAllBean);
-                        }
-//                        工作组成员通过班组名称分组
-//                        mClassGroupBeenList = new ArrayList<>();
-//                   for (WsEntity entity : classGroupBeanEntityList) {
-//                       ClassGroupBean classGroupBean = (ClassGroupBean) entity;
-//                       mClassGroupBeenList.add(classGroupBean);
+//                        for (WsEntity entity : processWorkerBeanEntityList) {
+//                            ProcessWorkerBean bean = (ProcessWorkerBean) entity;
+//                            WorkAllBean workAllBean = workAllBeanMap.get(bean.SWORKTEAMNAME);
+//                            if (workAllBean == null) workAllBean = new WorkAllBean();
+//                            workAllBean.processWorkerBeanList.add(bean);
+//                            workAllBeanMap.put(bean.SWORKTEAMNAME, workAllBean);
+//                        }
+////                        工作组成员通过班组名称分组
+////                        mClassGroupBeenList = new ArrayList<>();
+////                   for (WsEntity entity : classGroupBeanEntityList) {
+////                       ClassGroupBean classGroupBean = (ClassGroupBean) entity;
+////                       mClassGroupBeenList.add(classGroupBean);
+////
+////                   }
 //
-//                   }
-
-                        for (WsEntity entity : classGroupBeanEntityList) {
-                            ClassGroupBean classGroupBean = (ClassGroupBean) entity;
-                            WorkAllBean workAllBean = workAllBeanMap.get(classGroupBean.SWORKTEAMNAME);
-                            if (workAllBean == null) workAllBean = new WorkAllBean();
-                            workAllBean.classGroupBeanList.add(classGroupBean);
-                            workAllBeanMap.put(classGroupBean.SWORKTEAMNAME, workAllBean);
-                        }
-                        Iterator<Map.Entry<String, WorkAllBean>> it = workAllBeanMap.entrySet().iterator();
-                        while (it.hasNext()) {
-                            Map.Entry<String, WorkAllBean> entry = it.next();
-                            mWorkAllBeanList.add(entry.getValue());
-                        }
+//                        for (WsEntity entity : classGroupBeanEntityList) {
+//                            ClassGroupBean classGroupBean = (ClassGroupBean) entity;
+//                            WorkAllBean workAllBean = workAllBeanMap.get(classGroupBean.SWORKTEAMNAME);
+//                            if (workAllBean == null) workAllBean = new WorkAllBean();
+//                            workAllBean.classGroupBeanList.add(classGroupBean);
+//                            workAllBeanMap.put(classGroupBean.SWORKTEAMNAME, workAllBean);
+//                        }
+//                        Iterator<Map.Entry<String, WorkAllBean>> it = workAllBeanMap.entrySet().iterator();
+//                        while (it.hasNext()) {
+//                            Map.Entry<String, WorkAllBean> entry = it.next();
+//                            mWorkAllBeanList.add(entry.getValue());
+//                        }
                         mWorkAdapter.notifyDataSetChanged();
                         mGroupAdapter.notifyDataSetChanged();
                     }
@@ -452,6 +543,51 @@ public class MainActivity extends NotWebBaseActivity {
 //
 //                    }
 //                });
+    }
+
+    private <V extends WsEntity> List<List<V>> getListByWorkTeamName(List<V> originList) {
+        List<String> workTeamNames = new ArrayList<>();
+        List<String> distinctNames = null;
+        for (V entity : originList) {
+            if (entity instanceof ProcessWorkerBean) {
+                workTeamNames.add(((ProcessWorkerBean) entity).SWORKTEAMNAME);
+            } else if (entity instanceof ClassGroupBean) {
+                workTeamNames.add(((ClassGroupBean) entity).SWORKTEAMNAME);
+            }
+            distinctNames = distinctData(workTeamNames);
+        }
+
+        List<List<V>> listByWorkTeamName = new ArrayList<>();
+        if (distinctNames != null) {
+            for (String keyName : distinctNames) {
+                List<V> list = new ArrayList<>();
+                for (V entity : originList) {
+                    if (entity instanceof ProcessWorkerBean) {
+                        if (((ProcessWorkerBean) entity).SWORKTEAMNAME.equals(keyName)) {
+                            list.add(entity);
+                        }
+                    } else if (entity instanceof ClassGroupBean) {
+                        if (((ClassGroupBean) entity).SWORKTEAMNAME.equals(keyName)) {
+                            list.add(entity);
+                        }
+                    }
+
+                }
+                listByWorkTeamName.add(list);
+            }
+        }
+        return listByWorkTeamName;
+    }
+
+    private List<String> distinctData(List<String> source) {
+        List<String> result = new ArrayList<>();
+        for (String str : source) {
+            if (!result.contains(str)) {
+                result.add(str);
+            }
+        }
+
+        return result;
     }
 
     /**

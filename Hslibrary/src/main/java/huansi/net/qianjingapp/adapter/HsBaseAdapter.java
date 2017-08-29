@@ -10,7 +10,7 @@ import java.util.List;
  * Created by shanz on 2017/4/6.
  */
 
-public abstract class HsBaseAdapter<T> extends BaseAdapter{
+public abstract class  HsBaseAdapter<T> extends BaseAdapter{
     protected List<T> mList;
     protected LayoutInflater mInflater;
     protected Context mContext;
