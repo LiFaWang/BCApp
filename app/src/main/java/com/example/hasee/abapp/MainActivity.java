@@ -2,12 +2,18 @@ package com.example.hasee.abapp;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
 
 import com.example.hasee.abapp.adapter.BatchNumAdapter;
 import com.example.hasee.abapp.adapter.GroupAdapter;
+import com.example.hasee.abapp.adapter.GroupNumAdapter;
 import com.example.hasee.abapp.adapter.OrderNumAdapter;
 import com.example.hasee.abapp.adapter.StyleNumAdapter;
 import com.example.hasee.abapp.adapter.WorkAdapter;
@@ -49,6 +55,7 @@ public class MainActivity extends NotWebBaseActivity {
     private OrderNumAdapter mOrderNumAdapter;//订单号adapter
     private StyleNumAdapter mStyleNumAdapter;//款号adapter
     private BatchNumAdapter mBatchNumAdapter;//批次号adapter
+    private GroupNumAdapter mGrouNumAdapter;//批次号adapter
     //    private List<StyleNumBean> mFliterStyleNumList;//筛选款号数据集合
 //    private List<TopDataBean> mFliterBatchNumList;//筛选的批次号集合
 //    private List<StyleNumBean> listFliterStyleItem;//筛选款号的数据
@@ -74,7 +81,7 @@ public class MainActivity extends NotWebBaseActivity {
     private GroupAdapter mGroupAdapter;
     //    private View mHead;
     private BarChart mBarChart;
-    //    private List<TopDataBean> mTopDataBeanList;
+//        private List<TopDataBean> mTopDataBeanList;
     private List<RealTimeProcessBarBean> mRealTimeProcessBarBeanList;
     private LinearLayout mLlBalance;
     private List<ClassGroupBean> mClassGroupBeenList;
@@ -83,6 +90,9 @@ public class MainActivity extends NotWebBaseActivity {
     private float mCurrentY;
     private float mCurrentX;
     private float mX;
+    private List<String> mWorkTeamNames;//pop用的组名集合
+    private String mCurrentSelectedWorkTeam;
+    private List<List<ClassGroupBean>> mClassGroupListByWorkTeamName;
 
 
     @Override
@@ -204,6 +214,14 @@ public class MainActivity extends NotWebBaseActivity {
 
             }
         });
+        mActivityMainBinding.tvClass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mGrouNumAdapter = new GroupNumAdapter(mWorkTeamNames, MainActivity.this);
+                showPop(v);
+
+            }
+        });
 
 
     }
@@ -216,89 +234,6 @@ public class MainActivity extends NotWebBaseActivity {
 //        mActivityMainBinding.lvWork.addHeaderView(head);
     }
 
-//    private void initTestWorkData() {
-//        List<WorkGroupBean.WorkerInfo> workerInfos = new ArrayList<>();
-//        for (int i = 0; i < 6; i++) {
-//            WorkGroupBean.WorkerInfo workerInfo = new WorkGroupBean.WorkerInfo();
-//            workerInfo.workerID = "1000" + i;
-//            workerInfo.workerName = "张三" + i;
-//            workerInfo.workerPictureUri = "";
-//            workerInfo.workerType = "烫台" + i;
-//            workerInfos.add(workerInfo);
-//        }
-//        WorkGroupBean.ProgressBean progressBean1 = new WorkGroupBean.ProgressBean();
-//        progressBean1.progressName = "后片包缝";
-//        progressBean1.workerNames = new String[]{"支燕云","代广菊","郭玲林","刘涛"};
-//        WorkGroupBean.ProgressBean progressBean2 = new WorkGroupBean.ProgressBean();
-//        progressBean2.progressName = "后片包缝";
-//        progressBean2.workerNames = new String[]{"支燕云","代广菊","刘涛"};
-//        WorkGroupBean.ProgressBean progressBean3 = new WorkGroupBean.ProgressBean();
-//        progressBean3.progressName = "后片包缝";
-//        progressBean3.workerNames = new String[]{"支燕云","代广菊","郭玲林","刘涛"};
-//        WorkGroupBean.ProgressBean progressBean4 = new WorkGroupBean.ProgressBean();
-//        progressBean4.progressName = "后片包缝";
-//        progressBean4.workerNames = new String[]{"支燕云","刘涛"};
-//        WorkGroupBean.ProgressBean progressBean5 = new WorkGroupBean.ProgressBean();
-//        progressBean5.progressName = "后片包缝";
-//        progressBean5.workerNames = new String[]{"支燕云","代广菊","郭玲林","刘涛"};
-//        WorkGroupBean.ProgressBean progressBean6 = new WorkGroupBean.ProgressBean();
-//        progressBean6.progressName = "后片包缝";
-//        progressBean6.workerNames = new String[]{};
-//        WorkGroupBean.ProgressBean progressBean7 = new WorkGroupBean.ProgressBean();
-//        progressBean7.progressName = "后片包缝";
-//        progressBean7.workerNames = new String[]{"支燕云","代广菊","郭玲林","刘涛"};
-//
-//        WorkGroupBean workGroupBean1=new WorkGroupBean();
-//        workGroupBean1.workerInfos = workerInfos;
-//        workGroupBean1.progressBeen.add(progressBean1);
-//        workGroupBean1.progressBeen.add(progressBean2);
-//        workGroupBean1.progressBeen.add(progressBean3);
-//        workGroupBean1.progressBeen.add(progressBean4);
-//        workGroupBean1.progressBeen.add(progressBean5);
-//        workGroupBean1.progressBeen.add(progressBean6);
-//        workGroupBean1.progressBeen.add(progressBean7);
-//        WorkGroupBean workGroupBean2=new WorkGroupBean();
-//        workGroupBean2.workerInfos = workerInfos;
-//        workGroupBean2.progressBeen.add(progressBean1);
-//        workGroupBean2.progressBeen.add(progressBean2);
-//        workGroupBean2.progressBeen.add(progressBean3);
-//        workGroupBean2.progressBeen.add(progressBean4);
-//        workGroupBean2.progressBeen.add(progressBean5);
-//        workGroupBean2.progressBeen.add(progressBean6);
-//        workGroupBean2.progressBeen.add(progressBean7);
-//
-//        mGroupBeen = new ArrayList<>();
-//        mGroupBeen.add(workGroupBean1);
-//        mGroupBeen.add(workGroupBean2);
-//
-//
-//    }
-
-//
-//    @Override
-//    public void onClick(View view) {
-//        switch (view.getId()) {
-//            case R.id.tvOrderNum:
-//                mOrderNumAdapter = new OrderNumAdapter(mTopDataBeanList, this);
-//                mOrderNumAdapter.notifyDataSetChanged();
-//                showPop(view);
-//                break;
-//            case R.id.tvStyleNum:
-//                mStyleNumAdapter = new StyleNumAdapter(mTopDataBeanList, this);
-//                mStyleNumAdapter.notifyDataSetChanged();
-//                showPop(view);
-//                break;
-//            case R.id.tv_BatchNum:
-//                mBatchNumAdapter = new BatchNumAdapter(mTopDataBeanList, this);
-//                mBatchNumAdapter.notifyDataSetChanged();
-//                showPop(view);
-//                break;
-//
-//            default:
-//                break;
-//        }
-//
-//    }
 
     @SuppressWarnings("unchecked")
     private void initData() {
@@ -387,7 +322,8 @@ public class MainActivity extends NotWebBaseActivity {
                         for (WsEntity entity : processWorkerBeanEntityList) {
                             processWorkerBeanList.add((ProcessWorkerBean) entity);//
                         }
-                        List<List<ProcessWorkerBean>> listByWorkTeamName = getListByWorkTeamName(processWorkerBeanList);//通过组名过滤
+                        List<List<ProcessWorkerBean>> listByWorkTeamName = getListByWorkTeamName(processWorkerBeanList);
+                        //通过组名过滤
 
                         List<String> partNames = new ArrayList<>();//工序名称集合
                         List<String> distinctPartNames;
@@ -408,7 +344,7 @@ public class MainActivity extends NotWebBaseActivity {
                                 workGroupBean.progressBeen.add(progressBean);
                             }
                         }
-                        System.out.println(workGroupBean.progressBeen);
+//                        System.out.println(workGroupBean.progressBeen);
                         mWorkAdapter = new WorkAdapter(workGroupBean.progressBeen, getApplicationContext());
                         mActivityMainBinding.lvWork.setAdapter(mWorkAdapter);
                         //工序组成员通过班组名称分组
@@ -416,66 +352,16 @@ public class MainActivity extends NotWebBaseActivity {
                         for (WsEntity entity : classGroupBeanEntityList) {
                             classGroupBeanList.add((ClassGroupBean) entity);
                         }
-                        List<List<ClassGroupBean>> classGroupListByWorkTeamName = getListByWorkTeamName(classGroupBeanList);
+                        mClassGroupListByWorkTeamName = getListByWorkTeamName(classGroupBeanList);
 
-                        for (List<ClassGroupBean> classGroupBeen : classGroupListByWorkTeamName) {
-                            for (ClassGroupBean classGroupBean : classGroupBeen) {
-                                if (classGroupBean.SWORKTEAMNAME.equals(processWorkerBeanList.get(0).SWORKTEAMNAME)) {
-                                    System.out.println(classGroupBeen);
-                                    mGroupAdapter=new GroupAdapter(classGroupBeen,getApplicationContext());
-                                    mActivityMainBinding.gvGroup.setAdapter(mGroupAdapter);
-                                    mActivityMainBinding.tvClass .setText("班组:         "+classGroupBeen.get(0).SWORKTEAMNAME);
-
-                                    break;
-                                }
-                            }
-
+                        mCurrentSelectedWorkTeam = processWorkerBeanList.get(0).SWORKTEAMNAME;
+                        List<ClassGroupBean> classGroupBeen = getClassGroupBeenByWorkTeamName(mCurrentSelectedWorkTeam, mClassGroupListByWorkTeamName);
+                        if (classGroupBeen != null) {
+                            mGroupAdapter=new GroupAdapter(classGroupBeen,getApplicationContext());
+                            mActivityMainBinding.gvGroup.setAdapter(mGroupAdapter);
+                            mActivityMainBinding.tvClass.setText(classGroupBeen.get(0).SWORKTEAMNAME);
                         }
 
-
-//                        //工序组成员通过班组名称分组
-//                        Map<String, WorkAllBean> workAllBeanMap = new HashMap<>();
-//                        List<ProcessWorkerBean> processWorkerBeanList = new ArrayList<>();
-//                        Map<String, List<ProcessWorkerBean>> processWorkerBeanMap = new HashMap<>();
-//                        for (int i = 0; i < processWorkerBeanEntityList.size(); i++) {
-//                            WsEntity entity = processWorkerBeanEntityList.get(i);
-//                            ProcessWorkerBean bean = (ProcessWorkerBean) entity;
-////                            List<ProcessWorkerBean> processWorkerBeen = processWorkerBeanMap.get(bean.SWORKTEAMNAME);
-//                            processWorkerBeanList.add(bean);
-////                            processWorkerBeanMap.put(bean.SWORKTEAMNAME,processWorkerBeanList);
-//
-//
-//                        }
-
-//                        for (WsEntity entity : processWorkerBeanEntityList) {
-//                            ProcessWorkerBean bean = (ProcessWorkerBean) entity;
-//                            WorkAllBean workAllBean = workAllBeanMap.get(bean.SWORKTEAMNAME);
-//                            if (workAllBean == null) workAllBean = new WorkAllBean();
-//                            workAllBean.processWorkerBeanList.add(bean);
-//                            workAllBeanMap.put(bean.SWORKTEAMNAME, workAllBean);
-//                        }
-////                        工作组成员通过班组名称分组
-////                        mClassGroupBeenList = new ArrayList<>();
-////                   for (WsEntity entity : classGroupBeanEntityList) {
-////                       ClassGroupBean classGroupBean = (ClassGroupBean) entity;
-////                       mClassGroupBeenList.add(classGroupBean);
-////
-////                   }
-//
-//                        for (WsEntity entity : classGroupBeanEntityList) {
-//                            ClassGroupBean classGroupBean = (ClassGroupBean) entity;
-//                            WorkAllBean workAllBean = workAllBeanMap.get(classGroupBean.SWORKTEAMNAME);
-//                            if (workAllBean == null) workAllBean = new WorkAllBean();
-//                            workAllBean.classGroupBeanList.add(classGroupBean);
-//                            workAllBeanMap.put(classGroupBean.SWORKTEAMNAME, workAllBean);
-//                        }
-//                        Iterator<Map.Entry<String, WorkAllBean>> it = workAllBeanMap.entrySet().iterator();
-//                        while (it.hasNext()) {
-//                            Map.Entry<String, WorkAllBean> entry = it.next();
-//                            mWorkAllBeanList.add(entry.getValue());
-//                        }
-                        mWorkAdapter.notifyDataSetChanged();
-                        mGroupAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -555,6 +441,7 @@ public class MainActivity extends NotWebBaseActivity {
                 workTeamNames.add(((ClassGroupBean) entity).SWORKTEAMNAME);
             }
             distinctNames = distinctData(workTeamNames);
+            if (distinctNames.size()>1) mWorkTeamNames = distinctNames;
         }
 
         List<List<V>> listByWorkTeamName = new ArrayList<>();
@@ -588,6 +475,17 @@ public class MainActivity extends NotWebBaseActivity {
         }
 
         return result;
+    }
+
+    private List<ClassGroupBean> getClassGroupBeenByWorkTeamName(String currentSelectedWorkTeamName, List<List<ClassGroupBean>> classGroupListByWorkTeamName) {
+        for (List<ClassGroupBean> classGroupBeen : classGroupListByWorkTeamName) {
+            for (ClassGroupBean classGroupBean : classGroupBeen) {
+                if (classGroupBean.SWORKTEAMNAME.equals(currentSelectedWorkTeamName)) {
+                    return classGroupBeen;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -652,189 +550,200 @@ public class MainActivity extends NotWebBaseActivity {
         mActivityMainBinding.tvDownQTY.setText(topDataBean.IDOWNQTY);
     }
 
-//    /**
-//     * popWindow
-//     *
-//     * @param view
-//     */
-//    private void showPop(final View view) {
-//        View contentView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.pop_list, null);
-//        final PopupWindow popupWindow = new PopupWindow(contentView, length[0] / 4 - 10, length[1] / 4, true);
-//        final ListView popListView = contentView.findViewById(R.id.lv_pop_clothlist);
-//        switch (view.getId()) {
-//            case R.id.tvOrderNum:
-//                popListView.setAdapter(mOrderNumAdapter);
-//                break;
-//            case R.id.tvStyleNum:
-//                popListView.setAdapter(mStyleNumAdapter);
-//                break;
-//            case R.id.tv_BatchNum:
-//                popListView.setAdapter(mBatchNumAdapter);
-//                break;
-//        }
-//        popupWindow.setTouchable(true);
-//        ColorDrawable dw = new ColorDrawable(0x000);
-//        popupWindow.setBackgroundDrawable(dw);
-//        popupWindow.showAsDropDown(view);
-//        //三级联动
-//        popListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view2, int position, long id) {
+    /**
+     * popWindow
+     *
+     * @param view
+     */
+    private void showPop(final View view) {
+        View contentView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.pop_list, null);
+        final PopupWindow popupWindow = new PopupWindow(contentView, length[0] / 4 - 10, length[1] / 4, true);
+        final ListView popListView = (ListView) contentView.findViewById(R.id.lv_pop_clothlist);
+        switch (view.getId()) {
+            case R.id.tvOrderNum:
+                popListView.setAdapter(mOrderNumAdapter);
+                break;
+            case R.id.tvStyleNum:
+                popListView.setAdapter(mStyleNumAdapter);
+                break;
+            case R.id.tv_BatchNum:
+                popListView.setAdapter(mBatchNumAdapter);
+                break;
+            case R.id.tvClass:
+                popListView.setAdapter(mGrouNumAdapter);
+                break;
+
+        }
+        popupWindow.setTouchable(true);
+        ColorDrawable dw = new ColorDrawable(0x000);
+        popupWindow.setBackgroundDrawable(dw);
+        popupWindow.showAsDropDown(view);
+        //三级联动
+        popListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view2, int position, long id) {
+
+                switch (view.getId()) {
+                    case R.id.tvOrderNum:
+                        TopDataBean topDataBean= (TopDataBean) parent.getItemAtPosition(position);
+                        mActivityMainBinding.tvOrderNum.setText(topDataBean.SORDERNO);
+//                        TableHeadBean tableHeadBean = (TableHeadBean) parent.getItemAtPosition(position);
+//                        mActivityMainBinding.tvOrderNum.setText(tableHeadBean.SORDERNO);
+//                        listFliterStyleItem.clear();
+//                        listFliterBatchItem.clear();
+//                        //订单号对应的款号
+//                        for (int i = 0; i < mStyleNumBeanList.size(); i++) {
+//                            StyleNumBean styleNumBean = mStyleNumBeanList.get(i);
+//                            if (tableHeadBean.SORDERNO.equals(styleNumBean.SORDERNO)) {
+//                                listFliterStyleItem.add(styleNumBean);
+//                            }
+//                        }
+//                        if (listFliterStyleItem.isEmpty()) {
+//                            mActivityMainBinding.tvStyleNum.setText("款号");
+//                            mActivityMainBinding.tvBatchNum.setText("批次号");
+//                            mFliterStyleNumList.clear();
+//                            mFliterBatchNumList.clear();
+//                        } else {
+//                            mFliterStyleNumList.clear();
+//                            mFliterStyleNumList.addAll(listFliterStyleItem);
+//                            mActivityMainBinding.tvStyleNum.setText(listFliterStyleItem.get(0).SSTYLENO);
+//                            String styleNumId = listFliterStyleItem.get(0).SSTYLENO;
+//                            //款号对相应的批次号
+//                            for (int i = 0; i < mBatchNumBeanList.size(); i++) {
+//                                TopDataBean batchNumBean = mBatchNumBeanList.get(i);
+//                                if (styleNumId.equals(batchNumBean.SSTYLENO)) {
+//                                    listFliterBatchItem.add(batchNumBean);
+//                                }
+//                            }
+//                            if (listFliterBatchItem.isEmpty()) {
+//                                mActivityMainBinding.tvStyleNum.setText("批次号");
+//                                mFliterBatchNumList.clear();
+//                            } else {
+//                                mFliterBatchNumList.clear();
+//                                mFliterBatchNumList.addAll(listFliterBatchItem);
+//                                mActivityMainBinding.tvBatchNum.setText(listFliterBatchItem.get(0).SLOTNO);
+//                            }
 //
-//                switch (view.getId()) {
-//                    case R.id.tvOrderNum:
-//                        TopDataBean topDataBean= (TopDataBean) parent.getItemAtPosition(position);
-//                        mActivityMainBinding.tvOrderNum.setText(topDataBean.SORDERNO);
-////                        TableHeadBean tableHeadBean = (TableHeadBean) parent.getItemAtPosition(position);
-////                        mActivityMainBinding.tvOrderNum.setText(tableHeadBean.SORDERNO);
-////                        listFliterStyleItem.clear();
-////                        listFliterBatchItem.clear();
-////                        //订单号对应的款号
-////                        for (int i = 0; i < mStyleNumBeanList.size(); i++) {
-////                            StyleNumBean styleNumBean = mStyleNumBeanList.get(i);
-////                            if (tableHeadBean.SORDERNO.equals(styleNumBean.SORDERNO)) {
-////                                listFliterStyleItem.add(styleNumBean);
-////                            }
-////                        }
-////                        if (listFliterStyleItem.isEmpty()) {
-////                            mActivityMainBinding.tvStyleNum.setText("款号");
-////                            mActivityMainBinding.tvBatchNum.setText("批次号");
-////                            mFliterStyleNumList.clear();
-////                            mFliterBatchNumList.clear();
-////                        } else {
-////                            mFliterStyleNumList.clear();
-////                            mFliterStyleNumList.addAll(listFliterStyleItem);
-////                            mActivityMainBinding.tvStyleNum.setText(listFliterStyleItem.get(0).SSTYLENO);
-////                            String styleNumId = listFliterStyleItem.get(0).SSTYLENO;
-////                            //款号对相应的批次号
-////                            for (int i = 0; i < mBatchNumBeanList.size(); i++) {
-////                                TopDataBean batchNumBean = mBatchNumBeanList.get(i);
-////                                if (styleNumId.equals(batchNumBean.SSTYLENO)) {
-////                                    listFliterBatchItem.add(batchNumBean);
-////                                }
-////                            }
-////                            if (listFliterBatchItem.isEmpty()) {
-////                                mActivityMainBinding.tvStyleNum.setText("批次号");
-////                                mFliterBatchNumList.clear();
-////                            } else {
-////                                mFliterBatchNumList.clear();
-////                                mFliterBatchNumList.addAll(listFliterBatchItem);
-////                                mActivityMainBinding.tvBatchNum.setText(listFliterBatchItem.get(0).SLOTNO);
-////                            }
-////
-////                        }
+//                        }
+
+                        break;
+                    case R.id.tvStyleNum:
+                        TopDataBean dataBean= (TopDataBean) parent.getItemAtPosition(position);
+                        mActivityMainBinding.tvStyleNum.setText(dataBean.SSTYLENO);
+//                        StyleNumBean styleNumBean = (StyleNumBean) parent.getItemAtPosition(position);
+//                        mActivityMainBinding.tvStyleNum.setText(styleNumBean.SSTYLENO);
+//                        listFliterBatchItem.clear();
+//                        //款号对应的批次号
+//                        for (int i = 0; i < mBatchNumBeanList.size(); i++) {
+//                            TopDataBean batchNumBean = mBatchNumBeanList.get(i);
+//                            if (styleNumBean.SSTYLENO.equals(batchNumBean.SSTYLENO)) {
+//                                listFliterBatchItem.add(batchNumBean);
+//                            }
+//                        }
+//                        if (listFliterBatchItem.isEmpty()) {
+//                            mActivityMainBinding.tvBatchNum.setText("批次号");
+//                            mFliterBatchNumList.clear();
+//                        } else {
+//                            mFliterBatchNumList.clear();
+//                            mFliterBatchNumList.addAll(listFliterBatchItem);
+//                            mActivityMainBinding.tvBatchNum.setText(listFliterBatchItem.get(0).SLOTNO);
+//                        }
+
+                        break;
+                    case R.id.tv_BatchNum:
+                        TopDataBean bean= (TopDataBean) parent.getItemAtPosition(position);
+                        mActivityMainBinding.tvBatchNum.setText(bean.SLOTNO);
+                        mActivityMainBinding.tvDeliveryDate.setText(bean.DDELIVERYDATE);
+                        mActivityMainBinding.tvOrderQTY.setText(bean.IORDERQTY);
+                        mActivityMainBinding.tvCutQTY.setText(bean.ICUTQTY);
+                        mActivityMainBinding.tvUpQTY.setText(bean.IUPQTY);
+                        mActivityMainBinding.tvDownQTY.setText(bean.IDOWNQTY);
+//                        TopDataBean batchNumBean = (TopDataBean) parent.getItemAtPosition(position);
+//                        mActivityMainBinding.tvBatchNum.setText(batchNumBean.SLOTNO);
+//                        mActivityMainBinding.tvDeliveryDate.setText(batchNumBean.DDELIVERYDATE);
+//                        mActivityMainBinding.tvOrderQTY.setText(batchNumBean.IORDERQTY);
+//                        mActivityMainBinding.tvCutQTY.setText(batchNumBean.ICUTQTY);
+//                        mActivityMainBinding.tvUpQTY.setText(batchNumBean.IUPQTY);
+//                        mActivityMainBinding.tvDownQTY.setText(batchNumBean.IDOWNQTY);
+//                        setProcessWorkersData();
+//                        setWorkerInforsData();
+                        break;
+                    case R.id.tvClass:
+                        mCurrentSelectedWorkTeam = (String) parent.getItemAtPosition(position);
+                        List<ClassGroupBean> classGroupBeenByWorkTeamName = getClassGroupBeenByWorkTeamName(mCurrentSelectedWorkTeam, mClassGroupListByWorkTeamName);
+                        mGroupAdapter.setList(classGroupBeenByWorkTeamName);
+                        mGroupAdapter.notifyDataSetChanged();
+                        mActivityMainBinding.tvClass.setText(mCurrentSelectedWorkTeam);
+                        break;
+                }
+                popupWindow.dismiss();
+            }
+        });
+
+    }
+//    //工序人员分布
+//    private void setProcessWorkersData() {
 //
-//                        break;
-//                    case R.id.tvStyleNum:
-//                        TopDataBean dataBean= (TopDataBean) parent.getItemAtPosition(position);
-//                        mActivityMainBinding.tvStyleNum.setText(dataBean.SSTYLENO);
-////                        StyleNumBean styleNumBean = (StyleNumBean) parent.getItemAtPosition(position);
-////                        mActivityMainBinding.tvStyleNum.setText(styleNumBean.SSTYLENO);
-////                        listFliterBatchItem.clear();
-////                        //款号对应的批次号
-////                        for (int i = 0; i < mBatchNumBeanList.size(); i++) {
-////                            TopDataBean batchNumBean = mBatchNumBeanList.get(i);
-////                            if (styleNumBean.SSTYLENO.equals(batchNumBean.SSTYLENO)) {
-////                                listFliterBatchItem.add(batchNumBean);
-////                            }
-////                        }
-////                        if (listFliterBatchItem.isEmpty()) {
-////                            mActivityMainBinding.tvBatchNum.setText("批次号");
-////                            mFliterBatchNumList.clear();
-////                        } else {
-////                            mFliterBatchNumList.clear();
-////                            mFliterBatchNumList.addAll(listFliterBatchItem);
-////                            mActivityMainBinding.tvBatchNum.setText(listFliterBatchItem.get(0).SLOTNO);
-////                        }
+//        NewRxjavaWebUtils.getUIThread(NewRxjavaWebUtils.getObservable(this, "")
+//                        .map(new Func1<String, HsWebInfo>() {
+//                                 @Override
+//                                 public HsWebInfo call(String s) {
+//                                     return getJsonData(getApplicationContext(), CUS_SERVICE,
+//                                             "spappAssignment", "iIndex =2",
+//                                             ProcessWorkerBean.class.getName(), true, "");
+//                                 }
+//                             }
+//                        )
+//                , getApplicationContext(), mDialog, new SimpleHsWeb() {
+//                    @Override
+//                    public void success(HsWebInfo hsWebInfo) {
+//                        List<WsEntity> entities = hsWebInfo.wsData.LISTWSDATA;
+//                        mProcessWorkerBeanList.clear();
+//                        for (int i = 0; i < entities.size(); i++) {
+//                            ProcessWorkerBean processWorkerBean = (ProcessWorkerBean) entities.get(i);
+//                            mProcessWorkerBeanList.add(processWorkerBean);
+//                        }
+//                    }
 //
-//                        break;
-//                    case R.id.tv_BatchNum:
-//                        TopDataBean bean= (TopDataBean) parent.getItemAtPosition(position);
-//                        mActivityMainBinding.tvBatchNum.setText(bean.SLOTNO);
-//                        mActivityMainBinding.tvDeliveryDate.setText(bean.DDELIVERYDATE);
-//                        mActivityMainBinding.tvOrderQTY.setText(bean.IORDERQTY);
-//                        mActivityMainBinding.tvCutQTY.setText(bean.ICUTQTY);
-//                        mActivityMainBinding.tvUpQTY.setText(bean.IUPQTY);
-//                        mActivityMainBinding.tvDownQTY.setText(bean.IDOWNQTY);
-////                        TopDataBean batchNumBean = (TopDataBean) parent.getItemAtPosition(position);
-////                        mActivityMainBinding.tvBatchNum.setText(batchNumBean.SLOTNO);
-////                        mActivityMainBinding.tvDeliveryDate.setText(batchNumBean.DDELIVERYDATE);
-////                        mActivityMainBinding.tvOrderQTY.setText(batchNumBean.IORDERQTY);
-////                        mActivityMainBinding.tvCutQTY.setText(batchNumBean.ICUTQTY);
-////                        mActivityMainBinding.tvUpQTY.setText(batchNumBean.IUPQTY);
-////                        mActivityMainBinding.tvDownQTY.setText(batchNumBean.IDOWNQTY);
-////                        setProcessWorkersData();
-////                        setWorkerInforsData();
-//                        break;
-//                }
-//                popupWindow.dismiss();
-//            }
-//        });
+//                    @Override
+//                    public void error(HsWebInfo hsWebInfo, Context context) {
+//                        super.error(hsWebInfo, context);
 //
+//                    }
+//                });
 //    }
-////    //工序人员分布
-////    private void setProcessWorkersData() {
-////
-////        NewRxjavaWebUtils.getUIThread(NewRxjavaWebUtils.getObservable(this, "")
-////                        .map(new Func1<String, HsWebInfo>() {
-////                                 @Override
-////                                 public HsWebInfo call(String s) {
-////                                     return getJsonData(getApplicationContext(), CUS_SERVICE,
-////                                             "spappAssignment", "iIndex =2",
-////                                             ProcessWorkerBean.class.getName(), true, "");
-////                                 }
-////                             }
-////                        )
-////                , getApplicationContext(), mDialog, new SimpleHsWeb() {
-////                    @Override
-////                    public void success(HsWebInfo hsWebInfo) {
-////                        List<WsEntity> entities = hsWebInfo.wsData.LISTWSDATA;
-////                        mProcessWorkerBeanList.clear();
-////                        for (int i = 0; i < entities.size(); i++) {
-////                            ProcessWorkerBean processWorkerBean = (ProcessWorkerBean) entities.get(i);
-////                            mProcessWorkerBeanList.add(processWorkerBean);
-////                        }
-////                    }
-////
-////                    @Override
-////                    public void error(HsWebInfo hsWebInfo, Context context) {
-////                        super.error(hsWebInfo, context);
-////
-////                    }
-////                });
-////    }
-////    //待选人员清单
-////    private void setWorkerInforsData() {
-////
-////        NewRxjavaWebUtils.getUIThread(NewRxjavaWebUtils.getObservable(this, "")
-////                        .map(new Func1<String, HsWebInfo>() {
-////                                 @Override
-////                                 public HsWebInfo call(String s) {
-////                                     return getJsonData(getApplicationContext(), CUS_SERVICE,
-////                                             "spappAssignment", "iIndex =3",
-////                                             ProcessWorkerBean.class.getName(), true, "");
-////
-////                                 }
-////                             }
-////                        )
-////                , getApplicationContext(), mDialog, new SimpleHsWeb() {
-////                    @Override
-////                    public void success(HsWebInfo hsWebInfo) {
-////                        List<WsEntity> entities = hsWebInfo.wsData.LISTWSDATA;
-////                        mProcessWorkerBeanList.clear();
-////                        for (int i = 0; i < entities.size(); i++) {
-////                            ProcessWorkerBean processWorkerBean = (ProcessWorkerBean) entities.get(i);
-////                            mProcessWorkerBeanList.add(processWorkerBean);
-////                        }
-////                    }
-////
-////                    @Override
-////                    public void error(HsWebInfo hsWebInfo, Context context) {
-////                        super.error(hsWebInfo, context);
-////
-////                    }
-////                });
-////    }
+//    //待选人员清单
+//    private void setWorkerInforsData() {
+//
+//        NewRxjavaWebUtils.getUIThread(NewRxjavaWebUtils.getObservable(this, "")
+//                        .map(new Func1<String, HsWebInfo>() {
+//                                 @Override
+//                                 public HsWebInfo call(String s) {
+//                                     return getJsonData(getApplicationContext(), CUS_SERVICE,
+//                                             "spappAssignment", "iIndex =3",
+//                                             ProcessWorkerBean.class.getName(), true, "");
+//
+//                                 }
+//                             }
+//                        )
+//                , getApplicationContext(), mDialog, new SimpleHsWeb() {
+//                    @Override
+//                    public void success(HsWebInfo hsWebInfo) {
+//                        List<WsEntity> entities = hsWebInfo.wsData.LISTWSDATA;
+//                        mProcessWorkerBeanList.clear();
+//                        for (int i = 0; i < entities.size(); i++) {
+//                            ProcessWorkerBean processWorkerBean = (ProcessWorkerBean) entities.get(i);
+//                            mProcessWorkerBeanList.add(processWorkerBean);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void error(HsWebInfo hsWebInfo, Context context) {
+//                        super.error(hsWebInfo, context);
+//
+//                    }
+//                });
+//    }
 
 
 }
