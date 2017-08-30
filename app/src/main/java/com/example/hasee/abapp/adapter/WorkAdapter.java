@@ -35,12 +35,13 @@ public class WorkAdapter extends HsBaseAdapter<WorkGroupBean.ProgressBean> {
         List<String> workerNames = mList.get(position).workerNames;
         llWorkerNameContainer.removeAllViews();
         for (String workerName : workerNames) {
-            System.out.println(position+workerName);
+//          System.out.println(position+workerName);
             TextView tv = new TextView(mContext);
             tv.setTextColor(Color.BLACK);
             tv.setTextSize(20);
             tv.setText(workerName);
             tv.setPadding(0,5,5,5);
+            tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT,1.0f));
             llWorkerNameContainer.addView(tv);
         }
         return convertView;

@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.example.hasee.abapp.adapter.BatchNumAdapter;
 import com.example.hasee.abapp.adapter.GroupAdapter;
@@ -93,6 +94,7 @@ public class MainActivity extends NotWebBaseActivity {
     private List<String> mWorkTeamNames;//pop用的组名集合
     private String mCurrentSelectedWorkTeam;
     private List<List<ClassGroupBean>> mClassGroupListByWorkTeamName;
+    private List<ClassGroupBean> mClassGroupBeen;//根据组名筛选后存入的组对象
 
 
     @Override
@@ -128,6 +130,9 @@ public class MainActivity extends NotWebBaseActivity {
         initHead();
 
         initData();
+        //点击动态添加布局
+        layoutChange();
+
 //        mWorkAdapter = new WorkAdapter(mWorkAllBeanList, this);
 //        mGroupAdapter = new GroupAdapter(mClassGroupBeenList, this);
 //        mGroupAdapter = new GroupAdapter(mWorkAllBeanList, this);
@@ -224,6 +229,39 @@ public class MainActivity extends NotWebBaseActivity {
         });
 
 
+    }
+
+    private void layoutChange() {
+        final String[] mWorkerName = {""};
+        mActivityMainBinding.gvGroup.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Adapter adapter = parent.getAdapter();
+//                Map<String,String> map= (Map<String, String>) adapter.getItem(position);
+
+                ClassGroupBean classGroupBean = mClassGroupBeen.get(position);
+                mWorkerName[0] = classGroupBean.SEMPLOYEENAMECN;
+                OthersUtil.ToastMsg(MainActivity.this, "获取员工姓名:"+mWorkerName[0]);
+
+            }
+        });
+        mActivityMainBinding.lvWork.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if( mWorkerName[0]!=null){
+                    OthersUtil.ToastMsg(MainActivity.this, "添加:"+mWorkerName[0]+"进该工序");
+                }
+                parent.removeAllViews();
+                TextView textView=new TextView(getApplicationContext());
+                textView.setText(mWorkerName[0]);
+                parent.addView(textView);
+
+                mWorkerName[0]=null;
+            }
+        });
     }
 
     private void initHead() {
@@ -355,11 +393,11 @@ public class MainActivity extends NotWebBaseActivity {
                         mClassGroupListByWorkTeamName = getListByWorkTeamName(classGroupBeanList);
 
                         mCurrentSelectedWorkTeam = processWorkerBeanList.get(0).SWORKTEAMNAME;
-                        List<ClassGroupBean> classGroupBeen = getClassGroupBeenByWorkTeamName(mCurrentSelectedWorkTeam, mClassGroupListByWorkTeamName);
-                        if (classGroupBeen != null) {
-                            mGroupAdapter=new GroupAdapter(classGroupBeen,getApplicationContext());
+                        mClassGroupBeen = getClassGroupBeenByWorkTeamName(mCurrentSelectedWorkTeam, mClassGroupListByWorkTeamName);
+                        if (mClassGroupBeen != null) {
+                            mGroupAdapter=new GroupAdapter(mClassGroupBeen,getApplicationContext());
                             mActivityMainBinding.gvGroup.setAdapter(mGroupAdapter);
-                            mActivityMainBinding.tvClass.setText(classGroupBeen.get(0).SWORKTEAMNAME);
+                            mActivityMainBinding.tvClass.setText(mClassGroupBeen.get(0).SWORKTEAMNAME);
                         }
 
                     }
@@ -499,8 +537,8 @@ public class MainActivity extends NotWebBaseActivity {
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false);
         yAxis = mBarChart.getAxisLeft();
-//                        xAxis.setSpaceBetweenLabels(2);
-//                        yAxis.setLabelCount(8, false);
+//      xAxis.setSpaceBetweenLabels(2);
+//      yAxis.setLabelCount(8, false);
         yAxis.setDrawGridLines(false);
         mBarChart.setNoDataText("没有数据");
         mRealTimeProcessBarBeanList.clear();

@@ -31,9 +31,9 @@ public class GroupAdapter extends HsBaseAdapter<ClassGroupBean> {
         TextView tvWorkerNO = ViewHolder.get(convertView, R.id.tv_worker_no);
         TextView tvWorkerType = ViewHolder.get(convertView, R.id.tv_worker_type);
         ImageView ivHeadImg = ViewHolder.get(convertView, R.id.iv_head_img);
-        tvWorkerName.setText(mList.get(position).SEMPLOYEENAMECN);
-        tvWorkerNO.setText(mList.get(position).SEMPLOYEENO);
-        tvWorkerType.setText(mList.get(position).SWORKTYPE);
+        tvWorkerName.setText("姓名:" + mList.get(position).SEMPLOYEENAMECN);
+        tvWorkerNO.setText("工号:" +mList.get(position).SEMPLOYEENO);
+        tvWorkerType.setText("工种:" +mList.get(position).SWORKTYPE);
         ivHeadImg.setImageResource(R.drawable.ic_launcher);
         return convertView;
     }
