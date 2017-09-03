@@ -30,6 +30,7 @@ public class GroupNumAdapter extends HsBaseAdapter<String> {
         }
         TextView tv  = ViewHolder.get(convertView,R.id.text);
         tv.setTextColor(Color.BLACK);
+        tv.setTextSize(20);
         tv.setText(mList.get(position));
         return convertView;
     }

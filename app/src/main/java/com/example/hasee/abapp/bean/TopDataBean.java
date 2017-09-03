@@ -23,15 +23,29 @@ public class TopDataBean extends WsData {
      }
      ]
      */
+    /**
+     * {
+     "STATUS": "0",
+     "DATA": [
+     {
+     "SORDERNO": "SO17040001",
+     "SSTYLENO": "test",
+     "SPRODUCTNO": "49481"
+     }
+     ]
+     }
+     */
 
     public String SORDERNO="";
     public String SSTYLENO="";
-    public String SLOTNO="";
-    public String DDELIVERYDATE="";
-    public String IORDERQTY="";
-    public String ICUTQTY="";
-    public String IUPQTY="";
-    public String IDOWNQTY="";
+//    public String SLOTNO="";
+//    public String DDELIVERYDATE="";
+//    public String IORDERQTY="";
+//    public String ICUTQTY="";
+//    public String IUPQTY="";
+//    public String IDOWNQTY="";
+    public String SPRODUCTNO="";
+
 
 
 }

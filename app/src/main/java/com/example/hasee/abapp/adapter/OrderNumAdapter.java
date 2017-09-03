@@ -1,6 +1,7 @@
 package com.example.hasee.abapp.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -28,6 +29,8 @@ public class OrderNumAdapter extends HsBaseAdapter<TopDataBean> {
             view = mInflater.inflate(R.layout.item_ordernum_list,viewGroup,false);
         }
         TextView tv  = ViewHolder.get(view,R.id.text);
+        tv.setTextColor(Color.BLACK);
+        tv.setTextSize(20);
         tv.setText(mList.get(i).SORDERNO);
         return view;
     }

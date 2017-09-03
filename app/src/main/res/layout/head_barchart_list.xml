@@ -12,12 +12,12 @@
         android:text="工序平衡图"
         android:textColor="@color/colorTitle"
         android:textSize="22sp"/>
-    <include layout="@layout/underline_black"></include>
+    <include layout="@layout/underline_black"/>
     <com.github.mikephil.charting.charts.BarChart
         android:id="@+id/barChart"
         android:layout_width="match_parent"
         android:layout_height="120dp"/>
-    <include layout="@layout/underline_black"></include>
+    <include layout="@layout/underline_black"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,6 +26,6 @@
         android:text="工序指派"
         android:textColor="@color/colorTitle"
         android:textSize="22sp"/>
-    <include layout="@layout/underline_black"></include>
+    <include layout="@layout/underline_black"/>
 
 </LinearLayout>

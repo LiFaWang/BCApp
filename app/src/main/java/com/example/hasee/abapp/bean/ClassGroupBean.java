@@ -20,6 +20,7 @@ public class ClassGroupBean extends WsData {
     public String SEMPLOYEENAMECN="";
     public String SWORKTYPE="";
     public String GPIC="";
+    public boolean isSelected;
 
     @Override
     public String toString() {
