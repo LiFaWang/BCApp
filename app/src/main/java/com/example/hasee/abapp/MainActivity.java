@@ -2,6 +2,7 @@ package com.example.hasee.abapp;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
@@ -15,6 +16,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.hasee.abapp.adapter.BatchNumAdapter;
 import com.example.hasee.abapp.adapter.GroupAdapter;
 import com.example.hasee.abapp.adapter.OrderNumAdapter;
@@ -28,6 +30,8 @@ import com.example.hasee.abapp.bean.TableHeadBean;
 import com.example.hasee.abapp.bean.TopDataBean;
 import com.example.hasee.abapp.databinding.ActivityMainBinding;
 import com.example.hasee.abapp.event.CardNumEvent;
+import com.example.hasee.abapp.service.DetectionCardService;
+import com.example.hasee.abapp.utils.Base64BitmapUtils;
 import com.example.hasee.abapp.utils.MyUtils;
 import com.example.hasee.abapp.utils.WBUtils;
 import com.github.florent37.viewanimator.ViewAnimator;
@@ -46,7 +50,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
 
 import huansi.net.qianjingapp.base.NotWebBaseActivity;
 import huansi.net.qianjingapp.entity.HsWebInfo;
@@ -123,6 +126,7 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
     private boolean isChecked;//班组栏的选择
     private String mSemployeeno;//员工编码
     private List<WsEntity> mClassGroupBeanEntityList;//班组的源数据
+    private String mCardNum;
 
 
     @Override
@@ -153,19 +157,13 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
         allPoints = new ArrayList<>();
         errorPoints = new ArrayList<>();
         barChart = new ArrayList<>();
+//        SPUtils.saveSpData(getBaseContext(), CARD_NUM, employeeInfoBean.SEMPNO);
 
-//        mActivityMainBinding.tvOrderNum.setOnClickListener(this);
-//        mActivityMainBinding.tvStyleNum.setOnClickListener(this);
-//        mActivityMainBinding.tvBatchNum.setOnClickListener(this);
         length = MyUtils.getScreenSize(this);
-//        initHead();
-//        mActivityMainBinding.hdvgMain.setOnDragReleaseListener(new HSDragViewGroup.OnDragReleaseListener() {
-//            @Override
-//            public void dragRelease(View from, View to) {
-//                Log.i("dragRelease",from+","+to);
-//            }
-//        });
-        initHeadChard();
+        startService(new Intent(this, DetectionCardService.class));//启动监听刷卡的服务
+//        initHeadChard(mCardNum);
+        initHeadChard("2222");
+
 //
         //点击动态添加布局
 //        layoutChange();
@@ -180,34 +178,6 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
         classGroupNameAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.string_item,
                 R.id.tvString, classGroupNameList);
         mActivityMainBinding.spGroupName.setAdapter(classGroupNameAdapter);
-//        mActivityMainBinding.gvGroup.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//
-//            int currentPosition;
-//
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//
-//                    if (!isChecked) {
-//                        currentPosition = position;
-//                        mActivityMainBinding.gvGroup.setClickable(true);
-//                        view.setBackgroundColor(Color.DKGRAY);
-//                        String workersName = classGroupBeanShowList.get(position).SEMPLOYEENAMECN;
-//                        String GroupName = classGroupBeanShowList.get(position).SWORKTEAMNAME;
-//                        mSemployeeno = classGroupBeanShowList.get(position).SEMPLOYEENO;
-//                        OthersUtil.ToastMsg(getApplicationContext(), "已经选到" + workersName + "(" + GroupName + ")");
-//                        isChecked = true;
-//                    } else {
-//                        view.setBackgroundColor(Color.TRANSPARENT);
-//                        isChecked = false;
-//                        mActivityMainBinding.gvGroup.setClickable(false);
-//
-//                    }
-//
-////                isChecked=!isChecked;
-//                mGroupAdapter.notifyDataSetChanged();
-//            }
-//
-//        });
 
         mActivityMainBinding.gvGroup.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -237,8 +207,7 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         deleteWorkers(bean.IIDEN);
-                        OthersUtil.ToastMsg(MainActivity.this, ((TextView) v).getText().toString());
-                        setCurrentDate(order, style, product);//根据记录后的三级条件查询
+                        OthersUtil.ToastMsg(MainActivity.this, ((TextView) v).getText().toString()+"删除成功");
                     }
                 });
                 builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -248,8 +217,6 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                     }
                 });
                 builder.create().show();
-
-
             }
 
             //新增员工
@@ -257,6 +224,8 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
             public void onItemClick(final View v) {
                 if (isChecked) {
                     final ProcessWorkerBean processWorkerBean = (ProcessWorkerBean) v.getTag();
+
+
                     v.setBackgroundColor(Color.GREEN);
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setMessage("确定要添加到 " + processWorkerBean.SPARTNAME + " 工序吗？");
@@ -266,10 +235,16 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             upDateWorkers(processWorkerBean.SPARTNAME, processWorkerBean.IHDRID, processWorkerBean.ICUPROCEDUREID, mSemployeeno);
-                            setCurrentDate(order, style, product);//根据记录后的三级条件查询
+                            for (int i = 0; i <classGroupBeanShowList.size(); i++) {
+                                ClassGroupBean s = classGroupBeanShowList.get(i);
+                                s.isSelected=false;
+                            }
                             isChecked = false;
+                            mGroupAdapter.notifyDataSetChanged();
                             v.setBackgroundDrawable(getResources().getDrawable(R.drawable.setbar_bg));
                             dialog.dismiss();
+//
+
                         }
                     });
 
@@ -282,7 +257,6 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                         }
                     });
                     builder.create().show();
-
                 }
 
             }
@@ -293,17 +267,18 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
 
             @Override
             public void onClick(View v) {
-                List<ClassGroupBean> searchGroupBeen=new ArrayList<>();
+                List<ClassGroupBean> searchGroupBeen = new ArrayList<>();
                 String name = mActivityMainBinding.etName.getText().toString().trim();
                 for (int i = 0; i < mClassGroupBeanEntityList.size(); i++) {
                     ClassGroupBean bean = (ClassGroupBean) mClassGroupBeanEntityList.get(i);
-                    if (bean.SEMPLOYEENAMECN.contains(name)){
+                    if (bean.SEMPLOYEENAMECN.contains(name)) {
                         OthersUtil.ToastMsg(MainActivity.this, bean.SEMPLOYEENAMECN);
                         searchGroupBeen.add(bean);
                     }
                 }
                 classGroupBeanShowList.clear();
                 classGroupBeanShowList.addAll(searchGroupBeen);
+                classGroupNameAdapter.notifyDataSetChanged();
                 mGroupAdapter.notifyDataSetChanged();
                 mActivityMainBinding.etName.setText("");
             }
@@ -332,7 +307,6 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
             public void onClick(View v) {
                 synchronized ("Shrink") {
                     mActivityMainBinding.shrinkLayout.measure(0, 0);
-                    Timer timer = new Timer();
                     //释放
                     if (isShrink) {
                         ViewAnimator
@@ -342,7 +316,6 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                                 .duration(1000)
                                 .start();
                         mActivityMainBinding.shrinkLayout.setVisibility(View.VISIBLE);
-
                         //收缩
                     } else {
                         ViewAnimator
@@ -391,11 +364,9 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getCardNum(CardNumEvent event) {
-        String cardNum = event.getCardNum();
-//        activityMainBinding.etMain.setText(cardNum+"");
-//        setCard(cardNum);
-        toast = WBUtils.toastUtils(this, "卡号：" + cardNum, toast);
-        System.out.println("卡号：" + cardNum);
+        mCardNum = event.getCardNum();
+        toast = WBUtils.toastUtils(this, "卡号：" + mCardNum, toast);
+        System.out.println("卡号：" + mCardNum);
     }
 
     /**
@@ -430,7 +401,7 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
 //
 //    }
 //初始化表头
-    private void initHeadChard() {
+    private void initHeadChard(final String iCardNo) {
         OthersUtil.showLoadDialog(mDialog);
         NewRxjavaWebUtils.getUIThread(NewRxjavaWebUtils.getObservable(this, "")
 
@@ -439,7 +410,7 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                     @Override
                     public HsWebInfo call(String s) {
                         return NewRxjavaWebUtils.getJsonData(getApplicationContext(), CUS_SERVICE,
-                                "spappAssignment", "iIndex =-1",
+                                "spappAssignment", "iIndex =-1" + ",iCardNo=" + iCardNo,
                                 TopDataBean.class.getName(), true, "查询无结果！");
 
 
@@ -605,7 +576,6 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
 
                         break;
                     case R.id.tv_BatchNum:
-                        System.out.println("tv_BatchNum");
                         TopDataBean bean = (TopDataBean) parent.getItemAtPosition(position);
                         mActivityMainBinding.tvBatchNum.setText(bean.SPRODUCTNO);
                         String orderNo = mActivityMainBinding.tvOrderNum.getText().toString();
@@ -749,22 +719,14 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                                 "spappAssignStaffAction", "iIndex=0" + ",iHdrId=" + ihdrid + ",sPartName="
                                         + spartname + ",icuProcedureId=" + icuprocedureid
                                         + ",sEmployeeNo=" + semployeeno, WsData.class.getName(),
-                                true, "");
+                                false, "添加失败！");
 
                     }
                 }), getApplicationContext(), mDialog, new SimpleHsWeb() {
             @Override
             public void success(HsWebInfo hsWebInfo) {
-                String json = hsWebInfo.json;
-                System.out.println("新增员工" + json);
-                OthersUtil.ToastMsg(MainActivity.this, "添加成功");
-                mProcessWorkerAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void error(HsWebInfo hsWebInfo, Context context) {
-                super.error(hsWebInfo, context);
-
+                showCurrentProcessDate(order, style, product);//重新联网更新工序组的数据
+                OthersUtil.ToastMsg(getApplicationContext(), "添加成功");
             }
         });
     }
@@ -784,16 +746,49 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
                 }), getApplicationContext(), mDialog, new SimpleHsWeb() {
             @Override
             public void success(HsWebInfo hsWebInfo) {
-                System.out.println("删除员工:" + hsWebInfo);
-                String smessage = hsWebInfo.wsData.SMESSAGE;
-                OthersUtil.ToastMsg(MainActivity.this, "删除成功");
+                showCurrentProcessDate(order, style, product);//重新联网更新工序组的数据
+                mProcessWorkerAdapter.notifyDataSetChanged();
             }
 
+        });
+    }
+
+    /**
+     * 增加或者删除后重新联网获取数据
+     * @param order
+     * @param style
+     * @param product
+     */
+    private void showCurrentProcessDate(final String order, final String style, final String product) {
+        workerBeanList.clear();
+        OthersUtil.showLoadDialog(mDialog);
+
+        NewRxjavaWebUtils.getUIThread(NewRxjavaWebUtils.getObservable(this, "")
+                .map(new Func1<String, HsWebInfo>() {
+                    @Override
+                    public HsWebInfo call(String s) {
+                        HsWebInfo hsWebInfo = NewRxjavaWebUtils.getJsonData(getApplicationContext(), CUS_SERVICE,
+                                "spappAssignment", "iIndex =2" + ",sOrderNo=" + order + ",sStyleNo=" +
+                                        style + ",sProductNo=" + product,
+                                ProcessWorkerBean.class.getName(), true, "查询无结果！");
+                        Map<String, Object> map = new HashMap<>();
+                        if (!hsWebInfo.success) return hsWebInfo;
+                        map.put("ProcessWorkerBean", hsWebInfo.wsData.LISTWSDATA);
+                        hsWebInfo.object = map;
+                        return hsWebInfo;
+
+                    }
+                }), getApplicationContext(), mDialog, new SimpleHsWeb() {
             @Override
-            public void error(HsWebInfo hsWebInfo, Context context) {
-                super.error(hsWebInfo, context);
+            public void success(HsWebInfo hsWebInfo) {
 
+                Map<String, Object> map = (Map<String, Object>) hsWebInfo.object;
+                List<WsEntity> processWorkerBeanEntityList = (List<WsEntity>) map.get("ProcessWorkerBean");
+                //显示工序信息
+
+                showPartData(processWorkerBeanEntityList);
             }
+
         });
     }
 
@@ -939,16 +934,16 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
 //        return result;
 //    }
 
-    private List<ClassGroupBean> getClassGroupBeenByWorkTeamName(String currentSelectedWorkTeamName, List<List<ClassGroupBean>> classGroupListByWorkTeamName) {
-        for (List<ClassGroupBean> classGroupBeen : classGroupListByWorkTeamName) {
-            for (ClassGroupBean classGroupBean : classGroupBeen) {
-                if (classGroupBean.SWORKTEAMNAME.equals(currentSelectedWorkTeamName)) {
-                    return classGroupBeen;
-                }
-            }
-        }
-        return null;
-    }
+//    private List<ClassGroupBean> getClassGroupBeenByWorkTeamName(String currentSelectedWorkTeamName, List<List<ClassGroupBean>> classGroupListByWorkTeamName) {
+//        for (List<ClassGroupBean> classGroupBeen : classGroupListByWorkTeamName) {
+//            for (ClassGroupBean classGroupBean : classGroupBeen) {
+//                if (classGroupBean.SWORKTEAMNAME.equals(currentSelectedWorkTeamName)) {
+//                    return classGroupBeen;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * 显示柱状图信息
@@ -1002,16 +997,17 @@ public class MainActivity extends NotWebBaseActivity implements View.OnClickList
      * 显示头部信息
      */
     private void showTopData(TableHeadBean tableHeadBean) {
-//        mActivityMainBinding.tvOrderNum.setText(tableHeadBean.SORDERNO);
-//        mActivityMainBinding.tvStyleNum.setText(tableHeadBean.SSTYLENO);
-//        mActivityMainBinding.tvBatchNum.setText(tableHeadBean.SLOTNO);
         mActivityMainBinding.tvDeliveryDate.setText(tableHeadBean.DDELIVERYDATE);
         mActivityMainBinding.tvOrderQTY.setText(tableHeadBean.IORDERQTY);
         mActivityMainBinding.tvCutQTY.setText(tableHeadBean.ICUTQTY);
         mActivityMainBinding.tvUpQTY.setText(tableHeadBean.IUPQTY);
         mActivityMainBinding.tvDownQTY.setText(tableHeadBean.IDOWNQTY);
+        Glide.with(getApplicationContext())
+                .load(Base64BitmapUtils.base64ToBitmap(tableHeadBean.IUPQTY))
+                .placeholder(R.mipmap.ic_launcher) //设置占位图
+                .error(R.mipmap.yifu)//设置错误图片
+                .into(mActivityMainBinding.ivPicture);
     }
-
 
 //    //工序人员分布
 //    private void setProcessWorkersData() {

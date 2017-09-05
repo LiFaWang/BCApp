@@ -18,7 +18,7 @@
             android:id="@+id/tv_progress_name"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/setbar_bg"
+            android:background="#ddf858"
             android:textSize="20sp"
             android:text="123"
             android:textColor="@color/colorTitle"/>

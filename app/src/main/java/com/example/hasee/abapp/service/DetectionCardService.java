@@ -47,7 +47,6 @@ public class DetectionCardService extends Service {
         //
         try {
             SerialPort serialPort= WBUtils.getSerialPort("/dev/ttyUSB10",9600);
-//            SerialPort serialPort= WBUtils.getSerialPort("/dev/ttyS0",9600);
             final InputStream mInputStream=serialPort.getInputStream();
             new Thread(new Runnable() {
                 @Override
